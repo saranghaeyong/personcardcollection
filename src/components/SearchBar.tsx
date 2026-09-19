@@ -30,8 +30,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Search by name..."
-          aria-label="Search people by name"
+          placeholder="Search people..."
+          aria-label="Search people by name, age, or date of birth"
           className="w-full pl-12 pr-12 py-3.5 bg-white text-[#1F2421] placeholder-[#9E968D] rounded-full border border-[#E0D8CE] shadow-xs focus:outline-none focus:border-[#1F2421] focus:ring-2 focus:ring-[#1F2421]/15 text-sm sm:text-base transition-all duration-200"
         />
 

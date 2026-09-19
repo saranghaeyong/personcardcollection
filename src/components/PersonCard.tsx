@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
 import { Person } from '../types';
 import { formatDisplayDate } from '../utils/dateAndAge';
-import { Calendar, User } from 'lucide-react';
+import { Calendar, User, Trash2 } from 'lucide-react';
 
 interface PersonCardProps {
   person: Person;
   onClick: (person: Person) => void;
+  onDelete?: (person: Person) => void;
 }
 
-export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick }) => {
+export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick, onDelete }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const formattedDOB = formatDisplayDate(person.date_of_birth);
+  const displayDOB = person.dateOfBirth || person.date_of_birth;
+  const displayImage = person.image || person.photo_url;
+  const formattedDOB = formatDisplayDate(displayDOB);
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(person);
+    }
+  };
 
   return (
     <article
@@ -30,7 +40,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick }) => {
       className="group relative bg-[#FFFFFF] rounded-2xl p-3 border border-[#EDE8E1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F2421] flex flex-col justify-between overflow-hidden"
     >
       {/* 4:5 Aspect Ratio Photo Container */}
-      <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#F4EFEB] mb-3.5">
+      <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#F4EFEB] mb-3">
         {/* Placeholder skeleton while loading */}
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 bg-[#EFE9E2] animate-pulse flex items-center justify-center">
@@ -39,14 +49,14 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick }) => {
         )}
 
         {/* Fallback image if error */}
-        {imageError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-[#8C847B] p-4 text-center">
+        {imageError || !displayImage ? (
+          <div className="w-full h-full flex flex-col items-center justify-center text-[#8C847B] p-4 text-center bg-[#F2EDE6]">
             <User className="w-12 h-12 mb-2 text-[#ABA195]" />
-            <span className="text-xs font-medium">{person.name}</span>
+            <span className="text-xs font-medium line-clamp-1">{person.name}</span>
           </div>
         ) : (
           <img
-            src={person.photo_url}
+            src={displayImage}
             alt={`Photo of ${person.name}`}
             loading="lazy"
             referrerPolicy="no-referrer"
@@ -58,10 +68,23 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person, onClick }) => {
           />
         )}
 
-        {/* Subtle decorative age pill top right */}
-        <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold text-[#2D2A26] shadow-xs">
+        {/* Age pill top right */}
+        <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold text-[#1F2421] shadow-xs">
           Age: {person.age}
         </div>
+
+        {/* Delete button on card (visible on hover / focus) */}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            aria-label={`Delete card for ${person.name}`}
+            title={`Delete ${person.name}`}
+            className="absolute top-2.5 left-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-[#FEE2E2] text-[#706A62] hover:text-[#B91C1C] backdrop-blur-md flex items-center justify-center shadow-xs transition-all duration-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Card Info */}

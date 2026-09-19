@@ -1,10 +1,10 @@
 import React, { useState, useRef, ChangeEvent, DragEvent } from 'react';
 import { Upload, X, RefreshCw, CheckCircle2, Image as ImageIcon } from 'lucide-react';
-import { compressImage, validateImageFile, CompressionResult } from '../utils/imageOptimizer';
+import { compressImageToDataUrl, validateImageFile, CompressionResult } from '../utils/imageOptimizer';
 
 interface ImageUploaderProps {
   currentPhotoUrl?: string;
-  onImageSelected: (file: File, previewUrl: string) => void;
+  onImageSelected: (dataUrl: string) => void;
   onImageRemoved: () => void;
   error?: string;
 }
@@ -26,16 +26,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setLocalError(null);
     const validation = validateImageFile(file);
     if (!validation.isValid) {
-      setLocalError(validation.error || 'Invalid file.');
+      setLocalError(validation.error || 'Invalid image file.');
       return;
     }
 
     setIsProcessing(true);
     try {
-      // Compress and optimize
-      const result = await compressImage(file);
+      // Compress and convert to base64 Data URL locally in browser
+      const result = await compressImageToDataUrl(file);
       setCompressionInfo(result);
-      onImageSelected(result.file, result.previewUrl);
+      onImageSelected(result.dataUrl);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error processing image';
       setLocalError(message);
@@ -76,7 +76,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     onImageRemoved();
   };
 
-  const previewSource = compressionInfo?.previewUrl || currentPhotoUrl;
+  const previewSource = compressionInfo?.dataUrl || currentPhotoUrl;
 
   return (
     <div className="w-full">
@@ -86,7 +86,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       {previewSource ? (
         /* Image Preview Box */
-        <div className="relative bg-[#F4EFEB] rounded-2xl p-4 border border-[#E8E2DA] flex flex-col sm:flex-row items-center gap-4">
+        <div className="relative bg-[#F4EFEB] rounded-2xl p-4 border border-[#E8E2DA] flex flex-col sm:flex-row items-center gap-4 animate-in fade-in duration-200">
           <div className="relative w-32 aspect-[4/5] rounded-xl overflow-hidden bg-[#E2DBD1] shadow-xs shrink-0">
             <img
               src={previewSource}
@@ -98,18 +98,20 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           <div className="flex-grow space-y-2 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start space-x-1.5 text-xs text-[#529E72] font-semibold">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Photo ready for card</span>
+              <span>Portrait ready</span>
             </div>
 
-            {compressionInfo && compressionInfo.compressionRatio > 0 && (
+            {compressionInfo && (
               <p className="text-xs text-[#706A62]">
                 Optimized size: {(compressionInfo.compressedSize / 1024).toFixed(0)} KB{' '}
-                <span className="text-[#529E72]">({compressionInfo.compressionRatio}% smaller)</span>
+                {compressionInfo.compressionRatio > 0 && (
+                  <span className="text-[#529E72]">({compressionInfo.compressionRatio}% smaller)</span>
+                )}
               </p>
             )}
 
             <p className="text-xs text-[#8C847B]">
-              Aspect ratio 4:5 portrait preview
+              Stored locally in browser (no external upload)
             </p>
 
             {/* Replace / Remove buttons */}
@@ -121,7 +123,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 className="px-3 py-1.5 text-xs font-medium bg-white text-[#1F2421] rounded-lg border border-[#D5CDC4] hover:bg-[#FAF8F5] transition-colors flex items-center space-x-1.5"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-[#706A62]" />
-                <span>Replace Photo</span>
+                <span>Change Photo</span>
               </button>
 
               <button
@@ -162,14 +164,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               </div>
 
               <p className="text-sm font-semibold text-[#1F2421] mb-1">
-                Click to upload or drag & drop portrait
+                Click to upload or drag & drop photo
               </p>
               <p className="text-xs text-[#8C847B] mb-2">
                 Supported: JPG, JPEG, PNG, WEBP (up to 10MB)
               </p>
               <span className="inline-flex items-center text-[11px] font-medium text-[#706A62] bg-[#F4EFEB] px-2.5 py-0.5 rounded-full">
                 <ImageIcon className="w-3 h-3 mr-1" />
-                Optimal 4:5 portrait ratio
+                Auto-optimized 4:5 portrait format
               </span>
             </>
           )}

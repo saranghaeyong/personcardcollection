@@ -5,6 +5,7 @@ import { FilterBar } from '../components/FilterBar';
 import { PersonGrid } from '../components/PersonGrid';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { EmptyState } from '../components/EmptyState';
+import { ShieldCheck, Plus } from 'lucide-react';
 
 interface CollectionPageProps {
   people: Person[];
@@ -13,6 +14,7 @@ interface CollectionPageProps {
   onFilterChange: (filters: FilterOptions) => void;
   onResetFilters: () => void;
   onCardClick: (person: Person) => void;
+  onDeletePerson: (person: Person) => void;
   onAddPersonClick: () => void;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
 }
@@ -24,22 +26,29 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
   onFilterChange,
   onResetFilters,
   onCardClick,
+  onDeletePerson,
   onAddPersonClick,
   searchInputRef
 }) => {
   return (
     <div className="w-full pb-20">
       {/* Hero Section */}
-      <section className="pt-8 pb-10 px-4 sm:px-6 lg:px-8 text-center max-w-4xl mx-auto">
+      <section className="pt-8 pb-8 px-4 sm:px-6 lg:px-8 text-center max-w-4xl mx-auto">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-tight text-[#1F2421] font-display">
           Person Card Collection
         </h2>
-        <p className="mt-3 text-base sm:text-lg text-[#6B655E] max-w-xl mx-auto">
-          Organize and explore your people collection.
+        <p className="mt-2.5 text-base sm:text-lg text-[#6B655E] max-w-xl mx-auto">
+          A simple and elegant collection of people.
         </p>
 
+        {/* Local Storage Privacy Notice Banner */}
+        <div className="mt-4 inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#FAF8F5] border border-[#EAE4DC] text-xs text-[#706A62]">
+          <ShieldCheck className="w-4 h-4 text-[#529E72] shrink-0" />
+          <span>Your cards are stored locally in this browser.</span>
+        </div>
+
         {/* Prominent Search Bar */}
-        <div className="mt-8">
+        <div className="mt-6">
           <SearchBar
             inputRef={searchInputRef}
             value={filters.searchQuery}
@@ -52,12 +61,26 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
 
       {/* Main Collection Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Filters & Sorting */}
-        <FilterBar
-          filters={filters}
-          onFilterChange={onFilterChange}
-          onReset={onResetFilters}
-        />
+        {/* Filters & Sorting + Add Action */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-grow">
+            <FilterBar
+              filters={filters}
+              onFilterChange={onFilterChange}
+              onReset={onResetFilters}
+            />
+          </div>
+
+          <button
+            type="button"
+            id="add-person-quick-btn"
+            onClick={onAddPersonClick}
+            className="self-end sm:self-auto px-4 py-2 bg-[#1F2421] hover:bg-[#000000] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center space-x-1.5 shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Card</span>
+          </button>
+        </div>
 
         {/* Content States: Loading, Empty, or Grid */}
         {loading ? (
@@ -72,6 +95,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
           <PersonGrid
             people={people}
             onCardClick={onCardClick}
+            onDeletePerson={onDeletePerson}
           />
         )}
       </main>

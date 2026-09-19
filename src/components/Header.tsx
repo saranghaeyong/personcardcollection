@@ -1,27 +1,19 @@
 import React from 'react';
-import { Users, PlusCircle, ShieldCheck, Database, Search, LogOut } from 'lucide-react';
-import { AdminUser } from '../types';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { Users, PlusCircle, RotateCcw, ShieldCheck, Search } from 'lucide-react';
 
 interface HeaderProps {
-  currentView: 'collection' | 'add-person' | 'admin' | 'admin-login';
-  onNavigate: (view: 'collection' | 'add-person' | 'admin' | 'admin-login') => void;
-  adminUser: AdminUser | null;
-  onLogout: () => void;
-  onOpenSetupModal: () => void;
+  currentView: 'collection' | 'add-person';
+  onNavigate: (view: 'collection' | 'add-person') => void;
+  onOpenResetModal: () => void;
   onFocusSearch?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentView,
   onNavigate,
-  adminUser,
-  onLogout,
-  onOpenSetupModal,
-  onFocusSearch,
+  onOpenResetModal,
+  onFocusSearch
 }) => {
-  const isConnected = isSupabaseConfigured();
-
   return (
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#EAE4DC] transition-all duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,13 +36,13 @@ export const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center space-x-1 sm:space-x-2" aria-label="Main Navigation">
+          {/* Navigation & Actions */}
+          <nav className="flex items-center space-x-1.5 sm:space-x-2.5" aria-label="Main Navigation">
             {/* Collection */}
             <button
               id="nav-collection-btn"
               onClick={() => onNavigate('collection')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 flex items-center space-x-1.5 ${
+              className={`px-3 py-2 text-sm font-medium rounded-xl transition-colors duration-150 flex items-center space-x-1.5 ${
                 currentView === 'collection'
                   ? 'bg-[#EAE4DC] text-[#1F2421]'
                   : 'text-[#5C5650] hover:text-[#1F2421] hover:bg-[#F2ECE4]'
@@ -60,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden sm:inline">Collection</span>
             </button>
 
-            {/* Search (Scrolls / focuses search on Home) */}
+            {/* Search (Focus search on collection view) */}
             <button
               id="nav-search-btn"
               onClick={() => {
@@ -71,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onFocusSearch?.();
                 }
               }}
-              className="px-3 py-2 text-sm font-medium rounded-lg text-[#5C5650] hover:text-[#1F2421] hover:bg-[#F2ECE4] transition-colors duration-150 flex items-center space-x-1.5"
+              className="px-3 py-2 text-sm font-medium rounded-xl text-[#5C5650] hover:text-[#1F2421] hover:bg-[#F2ECE4] transition-colors duration-150 flex items-center space-x-1.5"
               aria-label="Search Collection"
             >
               <Search className="w-4 h-4 text-[#7A746E]" />
@@ -81,82 +73,37 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Add Person */}
             <button
               id="nav-add-btn"
-              onClick={() => {
-                if (adminUser) {
-                  onNavigate('add-person');
-                } else {
-                  // Direct to add-person view (which will prompt login if admin restricted)
-                  onNavigate('add-person');
-                }
-              }}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 flex items-center space-x-1.5 ${
+              onClick={() => onNavigate('add-person')}
+              className={`px-3 py-2 text-sm font-medium rounded-xl transition-colors duration-150 flex items-center space-x-1.5 ${
                 currentView === 'add-person'
-                  ? 'bg-[#EAE4DC] text-[#1F2421]'
-                  : 'text-[#5C5650] hover:text-[#1F2421] hover:bg-[#F2ECE4]'
+                  ? 'bg-[#1F2421] text-white shadow-xs'
+                  : 'bg-[#EAE4DC]/80 text-[#1F2421] hover:bg-[#E0D8CE]'
               }`}
             >
-              <PlusCircle className="w-4 h-4 text-[#7A746E]" />
-              <span className="hidden sm:inline">Add Person</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>Add Person</span>
             </button>
 
-            {/* Admin Area */}
-            {adminUser ? (
-              <div className="flex items-center space-x-1">
-                <button
-                  id="nav-admin-dashboard-btn"
-                  onClick={() => onNavigate('admin')}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 flex items-center space-x-1.5 ${
-                    currentView === 'admin'
-                      ? 'bg-[#1F2421] text-white'
-                      : 'bg-[#EAE4DC]/80 text-[#1F2421] hover:bg-[#E0D8CE]'
-                  }`}
-                >
-                  <ShieldCheck className="w-4 h-4 text-[#529E72]" />
-                  <span className="hidden md:inline">Admin</span>
-                </button>
-                <button
-                  id="nav-admin-logout-btn"
-                  onClick={onLogout}
-                  title="Log out of Admin"
-                  aria-label="Log out of Administrator Account"
-                  className="p-2 text-[#7A746E] hover:text-[#B91C1C] hover:bg-[#F2ECE4] rounded-lg transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <button
-                id="nav-admin-login-btn"
-                onClick={() => onNavigate('admin-login')}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150 flex items-center space-x-1.5 ${
-                  currentView === 'admin-login'
-                    ? 'bg-[#EAE4DC] text-[#1F2421]'
-                    : 'text-[#5C5650] hover:text-[#1F2421] hover:bg-[#F2ECE4]'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4 text-[#7A746E]" />
-                <span>Admin</span>
-              </button>
-            )}
-
-            {/* Database / Supabase indicator badge */}
+            {/* Reset Sample Data Button */}
             <button
-              id="supabase-status-pill"
-              onClick={onOpenSetupModal}
-              title={isConnected ? 'Connected to Supabase' : 'Running in Local Mode - Click for Supabase Setup'}
-              className="ml-1 px-2.5 py-1 text-xs rounded-full border flex items-center space-x-1.5 transition-all duration-150 hover:shadow-xs focus:outline-none"
-              style={{
-                backgroundColor: isConnected ? '#ECFDF5' : '#F7F5F0',
-                borderColor: isConnected ? '#A7F3D0' : '#E2DCD5',
-                color: isConnected ? '#065F46' : '#706A62'
-              }}
+              id="nav-reset-sample-btn"
+              onClick={onOpenResetModal}
+              title="Reset sample data back to initial cards"
+              className="px-2.5 py-2 text-xs font-medium rounded-xl text-[#706A62] hover:text-[#1F2421] hover:bg-[#F2ECE4] transition-colors flex items-center space-x-1"
             >
-              <Database className={`w-3 h-3 ${isConnected ? 'text-[#059669]' : 'text-[#8A847C]'}`} />
-              <span className="hidden lg:inline text-[11px] font-medium">
-                {isConnected ? 'Supabase Live' : 'Database Setup'}
-              </span>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Reset Sample Data</span>
             </button>
 
+            {/* Privacy indicator badge */}
+            <div
+              id="local-storage-indicator"
+              title="Your cards are stored locally in this browser. No external server or database used."
+              className="hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-[#F4EFEB] border border-[#E5DFD6] text-xs text-[#529E72] font-medium"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#529E72]" />
+              <span className="text-[11px] text-[#423E39]">Local Storage</span>
+            </div>
           </nav>
         </div>
       </div>

@@ -1,6 +1,6 @@
 {
   "name": "Person Card Collection",
-  "description": "A simple and elegant digital collection of person cards with search, filtering, and admin management.",
+  "description": "A simple and elegant client-side digital collection of person cards with local storage, search, filtering, and instant card creation.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

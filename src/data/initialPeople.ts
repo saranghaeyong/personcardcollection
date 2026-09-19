@@ -1,76 +1,94 @@
 import { Person } from '../types';
 
-export const INITIAL_PEOPLE: Person[] = [
+export const SAMPLE_PEOPLE: Person[] = [
   {
-    id: 'seed-1',
-    name: 'Sarang R N',
-    age: 25,
-    date_of_birth: '2001-01-15',
-    photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()
-  },
-  {
-    id: 'seed-2',
-    name: 'Elena Rostova',
-    age: 28,
-    date_of_birth: '1998-04-22',
-    photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString()
-  },
-  {
-    id: 'seed-3',
-    name: 'Marcus Chen',
-    age: 32,
-    date_of_birth: '1994-08-11',
-    photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString()
-  },
-  {
-    id: 'seed-4',
-    name: 'Amina Diallo',
+    id: 'sample-1',
+    name: 'Alex Morgan',
     age: 24,
-    date_of_birth: '2002-11-03',
-    photo_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString()
+    dateOfBirth: '2002-04-15',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-15T10:00:00.000Z',
+    date_of_birth: '2002-04-15',
+    photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-15T10:00:00.000Z'
   },
   {
-    id: 'seed-5',
-    name: 'Oliver Wright',
-    age: 36,
-    date_of_birth: '1990-03-19',
-    photo_url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString()
-  },
-  {
-    id: 'seed-6',
-    name: 'Sophia Patel',
-    age: 29,
-    date_of_birth: '1997-07-29',
-    photo_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
-  },
-  {
-    id: 'seed-7',
-    name: 'Lucas Silva',
+    id: 'sample-2',
+    name: 'Maya Wilson',
     age: 27,
-    date_of_birth: '1999-09-14',
-    photo_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString()
+    dateOfBirth: '1999-08-21',
+    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-16T11:30:00.000Z',
+    date_of_birth: '1999-08-21',
+    photo_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-16T11:30:00.000Z'
   },
   {
-    id: 'seed-8',
-    name: 'Hana Tanaka',
+    id: 'sample-3',
+    name: 'Daniel Carter',
+    age: 31,
+    dateOfBirth: '1995-01-10',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-17T09:15:00.000Z',
+    date_of_birth: '1995-01-10',
+    photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-17T09:15:00.000Z'
+  },
+  {
+    id: 'sample-4',
+    name: 'Sophia Brown',
     age: 22,
-    date_of_birth: '2004-05-08',
-    photo_url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    dateOfBirth: '2004-06-05',
+    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-18T14:45:00.000Z',
+    date_of_birth: '2004-06-05',
+    photo_url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-18T14:45:00.000Z'
+  },
+  {
+    id: 'sample-5',
+    name: 'Ethan Miller',
+    age: 29,
+    dateOfBirth: '1997-11-18',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-19T16:20:00.000Z',
+    date_of_birth: '1997-11-18',
+    photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-19T16:20:00.000Z'
+  },
+  {
+    id: 'sample-6',
+    name: 'Olivia Davis',
+    age: 25,
+    dateOfBirth: '2001-03-27',
+    image: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-20T12:10:00.000Z',
+    date_of_birth: '2001-03-27',
+    photo_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-20T12:10:00.000Z'
+  },
+  {
+    id: 'sample-7',
+    name: 'Lucas Vance',
+    age: 26,
+    dateOfBirth: '2000-09-12',
+    image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-21T08:00:00.000Z',
+    date_of_birth: '2000-09-12',
+    photo_url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-21T08:00:00.000Z'
+  },
+  {
+    id: 'sample-8',
+    name: 'Chloe Bennett',
+    age: 28,
+    dateOfBirth: '1998-02-14',
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-22T13:40:00.000Z',
+    date_of_birth: '1998-02-14',
+    photo_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
+    created_at: '2026-01-22T13:40:00.000Z'
   }
 ];
+
+export const INITIAL_PEOPLE = SAMPLE_PEOPLE;

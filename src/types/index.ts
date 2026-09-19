@@ -2,29 +2,21 @@ export interface Person {
   id: string;
   name: string;
   age: number;
-  date_of_birth: string; // YYYY-MM-DD format
-  photo_url: string;
-  created_at?: string;
-  updated_at?: string;
+  dateOfBirth: string; // YYYY-MM-DD
+  image: string; // Base64 Data URL or image URL
+  createdAt: string; // ISO timestamp string
 
-  // Future-ready extensible architecture (not shown in current UI, but preserved in typing)
-  gender?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  notes?: string;
-  occupation?: string;
-  category?: string;
-  tags?: string[];
-  is_favorite?: boolean;
+  // Compatibility aliases
+  date_of_birth?: string;
+  photo_url?: string;
+  created_at?: string;
 }
 
 export interface PersonFormData {
   name: string;
   age: number | string;
-  date_of_birth: string;
-  photo_url: string;
-  photo_file?: File | null;
+  dateOfBirth: string;
+  image: string;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'alpha-asc' | 'alpha-desc' | 'age-asc' | 'age-desc';
@@ -39,12 +31,7 @@ export interface FilterOptions {
 export interface ValidationErrors {
   name?: string;
   age?: string;
-  date_of_birth?: string;
-  photo?: string;
+  dateOfBirth?: string;
+  image?: string;
   general?: string;
-}
-
-export interface AdminUser {
-  id: string;
-  email: string;
 }

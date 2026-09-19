@@ -2,18 +2,17 @@ import { ValidationErrors, PersonFormData } from '../types';
 
 /**
  * Reusable utility for calculating age from a Date of Birth string.
- * Keeps user-entered age intact in the database while allowing optional calculation.
  */
 export function calculateAgeFromDOB(dobString: string): number {
   if (!dobString) return 0;
-  
+
   const dob = new Date(dobString);
   if (isNaN(dob.getTime())) return 0;
 
   const today = new Date();
   let age = today.getFullYear() - dob.getFullYear();
   const monthDiff = today.getMonth() - dob.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
     age--;
   }
@@ -22,13 +21,12 @@ export function calculateAgeFromDOB(dobString: string): number {
 }
 
 /**
- * Formats date into standard elegant format: e.g. "15 January 2001"
+ * Formats date into standard elegant format: e.g. "April 15, 2002"
  */
-export function formatDisplayDate(dateString: string): string {
+export function formatDisplayDate(dateString?: string): string {
   if (!dateString) return 'Not specified';
 
   try {
-    // Handle YYYY-MM-DD cleanly without timezone offset discrepancies
     const parts = dateString.split('T')[0].split('-');
     if (parts.length === 3) {
       const year = parseInt(parts[0], 10);
@@ -41,13 +39,13 @@ export function formatDisplayDate(dateString: string): string {
           'January', 'February', 'March', 'April', 'May', 'June',
           'July', 'August', 'September', 'October', 'November', 'December'
         ];
-        return `${day} ${months[monthIndex]} ${year}`;
+        return `${months[monthIndex]} ${day}, ${year}`;
       }
     }
 
     const fallbackDate = new Date(dateString);
     if (!isNaN(fallbackDate.getTime())) {
-      return fallbackDate.toLocaleDateString('en-GB', {
+      return fallbackDate.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
@@ -65,57 +63,57 @@ export function formatDisplayDate(dateString: string): string {
  */
 export function validatePersonData(
   data: Partial<PersonFormData>,
-  hasExistingPhoto = false
+  hasExistingImage = false
 ): { isValid: boolean; errors: ValidationErrors } {
   const errors: ValidationErrors = {};
 
-  // Name validation
+  // 1. Name validation
   const trimmedName = data.name?.trim() || '';
   if (!trimmedName) {
-    errors.name = 'Please enter a name.';
+    errors.name = 'Please enter a person name.';
   } else if (trimmedName.length < 2) {
     errors.name = 'Name must be at least 2 characters.';
   } else if (trimmedName.length > 100) {
     errors.name = 'Name cannot exceed 100 characters.';
   }
 
-  // Age validation
-  if (data.age === undefined || data.age === null || data.age === '') {
-    errors.age = 'Please enter age.';
+  // 2. Date of Birth validation
+  if (!data.dateOfBirth) {
+    errors.dateOfBirth = 'Please select a date of birth.';
   } else {
-    const numericAge = Number(data.age);
-    if (isNaN(numericAge) || !Number.isInteger(numericAge)) {
-      errors.age = 'Age must be a valid whole number.';
-    } else if (numericAge < 0 || numericAge > 125) {
-      errors.age = 'Please enter a sensible age between 0 and 125.';
-    }
-  }
-
-  // Date of Birth validation
-  if (!data.date_of_birth) {
-    errors.date_of_birth = 'Please select a date of birth.';
-  } else {
-    const dob = new Date(data.date_of_birth);
+    const dob = new Date(data.dateOfBirth);
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
     if (isNaN(dob.getTime())) {
-      errors.date_of_birth = 'Please enter a valid date.';
+      errors.dateOfBirth = 'Please enter a valid date.';
     } else if (dob > today) {
-      errors.date_of_birth = 'Date of birth cannot be in the future.';
+      errors.dateOfBirth = 'Date of birth cannot be in the future.';
     } else {
       const minDate = new Date();
       minDate.setFullYear(minDate.getFullYear() - 130);
       if (dob < minDate) {
-        errors.date_of_birth = 'Date of birth is too far in the past.';
+        errors.dateOfBirth = 'Date of birth is too far in the past.';
       }
     }
   }
 
-  // Photo validation
-  const hasPhoto = !!data.photo_file || (!!data.photo_url && data.photo_url.trim().length > 0) || hasExistingPhoto;
-  if (!hasPhoto) {
-    errors.photo = 'Please upload a photo.';
+  // 3. Age validation
+  if (data.age === undefined || data.age === null || data.age === '') {
+    errors.age = 'Please enter an age.';
+  } else {
+    const numericAge = Number(data.age);
+    if (isNaN(numericAge) || !Number.isInteger(numericAge)) {
+      errors.age = 'Age must be a valid whole number.';
+    } else if (numericAge < 0 || numericAge > 130) {
+      errors.age = 'Please enter a sensible age between 0 and 130.';
+    }
+  }
+
+  // 4. Photo validation
+  const hasImage = (!!data.image && data.image.trim().length > 0) || hasExistingImage;
+  if (!hasImage) {
+    errors.image = 'Please upload a photo for the card.';
   }
 
   return {

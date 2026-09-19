@@ -1,26 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Person, PersonFormData, FilterOptions, AdminUser } from './types';
-import { fetchPeople, createPerson, updatePerson, deletePerson } from './services/peopleService';
-import { getInitialAdminSession, signInAdmin, signOutAdmin } from './services/authService';
+import { Person, PersonFormData, FilterOptions } from './types';
+import { fetchPeople, createPerson, updatePerson, deletePerson, resetToSamplePeople } from './services/peopleService';
 import { Header } from './components/Header';
 import { CollectionPage } from './pages/CollectionPage';
 import { AddEditPersonPage } from './pages/AddEditPersonPage';
-import { AdminLoginPage } from './pages/AdminLoginPage';
-import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { PersonDetailModal } from './components/PersonDetailModal';
-import { ConfirmDialog } from './components/ConfirmDialog';
-import { SupabaseSetupModal } from './components/SupabaseSetupModal';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { ResetConfirmModal } from './components/ResetConfirmModal';
+import { ShieldCheck, RotateCcw } from 'lucide-react';
 
 export default function App() {
-  // Navigation View State
-  const [currentView, setCurrentView] = useState<'collection' | 'add-person' | 'admin' | 'admin-login'>('collection');
-  
-  // Data State
+  // Current view state
+  const [currentView, setCurrentView] = useState<'collection' | 'add-person'>('collection');
+
+  // People collection state
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
 
-  // Filter & Search State
+  // Search & Filter state
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '',
     sortBy: 'newest',
@@ -28,14 +25,13 @@ export default function App() {
     maxAge: null
   });
 
-  // Modal / Interaction States
+  // Modal states
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
   const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  // Notification Toast
+  // Feedback Toast
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -47,22 +43,14 @@ export default function App() {
     }, 3500);
   };
 
-  // Load Admin session
-  useEffect(() => {
-    getInitialAdminSession().then((user) => {
-      setAdminUser(user);
-    });
-  }, []);
-
-  // Fetch People
+  // Load people from localStorage with applied filters
   const loadPeople = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchPeople(filters);
       setPeople(data);
     } catch (err) {
-      console.error('Failed to load people:', err);
-      showToast('Error loading people collection.', 'error');
+      console.warn('Notice loading people from local storage:', err);
     } finally {
       setLoading(false);
     }
@@ -72,16 +60,12 @@ export default function App() {
     loadPeople();
   }, [loadPeople]);
 
-  // Handle URL sync on mount and popstate
+  // Handle URL sync
   useEffect(() => {
     const handleLocationChange = () => {
       const path = window.location.pathname;
-      if (path === '/add-person' || path === '/admin/add') {
+      if (path === '/add-person') {
         setCurrentView('add-person');
-      } else if (path === '/admin/login') {
-        setCurrentView('admin-login');
-      } else if (path.startsWith('/admin')) {
-        setCurrentView('admin');
       } else {
         setCurrentView('collection');
       }
@@ -92,74 +76,64 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  const navigateTo = (view: 'collection' | 'add-person' | 'admin' | 'admin-login') => {
+  const navigateTo = (view: 'collection' | 'add-person') => {
     setCurrentView(view);
-    let targetPath = '/';
-    if (view === 'add-person') targetPath = '/add-person';
-    if (view === 'admin-login') targetPath = '/admin/login';
-    if (view === 'admin') targetPath = '/admin';
-
+    const targetPath = view === 'add-person' ? '/add-person' : '/';
     if (window.location.pathname !== targetPath) {
       window.history.pushState({}, '', targetPath);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Save Person (Add or Edit)
-  const handleSavePerson = async (formData: PersonFormData, id?: string, oldPhotoUrl?: string) => {
+  // Save Person (Create or Update)
+  const handleSavePerson = async (formData: PersonFormData, id?: string) => {
     try {
       if (id) {
-        await updatePerson(id, formData, oldPhotoUrl);
-        showToast('Person updated successfully.');
+        await updatePerson(id, formData);
+        showToast('Person card updated successfully.');
       } else {
         await createPerson(formData);
-        showToast('Person added successfully.');
+        showToast('Person card created and added to collection.');
       }
       setPersonToEdit(null);
       await loadPeople();
-      navigateTo(adminUser ? 'admin' : 'collection');
+      navigateTo('collection');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to save person.';
+      const msg = err instanceof Error ? err.message : 'Failed to save person card.';
       showToast(msg, 'error');
       throw err;
     }
   };
 
   // Delete Person Flow
-  const handleConfirmDelete = async () => {
-    if (!personToDelete) return;
-    setIsDeleting(true);
+  const handleConfirmDelete = async (person: Person) => {
     try {
-      await deletePerson(personToDelete.id, personToDelete.photo_url);
-      showToast('Person deleted successfully.');
+      await deletePerson(person.id);
+      showToast(`Deleted card for ${person.name}.`);
       setPersonToDelete(null);
-      setSelectedPerson(null);
+      if (selectedPerson?.id === person.id) {
+        setSelectedPerson(null);
+      }
       await loadPeople();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to delete person.';
       showToast(msg, 'error');
-    } finally {
-      setIsDeleting(false);
     }
   };
 
-  // Admin Auth handlers
-  const handleAdminLogin = async (email: string, pass: string) => {
-    const result = await signInAdmin(email, pass);
-    if (result.user) {
-      setAdminUser(result.user);
-      showToast(`Welcome, administrator!`);
-      navigateTo('admin');
-      return { success: true };
+  // Reset to sample fictional cards
+  const handleResetSampleData = async () => {
+    try {
+      const restored = resetToSamplePeople();
+      setIsResetModalOpen(false);
+      setSelectedPerson(null);
+      setPersonToEdit(null);
+      await loadPeople();
+      showToast(`Sample cards restored (${restored.length} cards).`);
+    } catch (err) {
+      console.warn('Error resetting sample data:', err);
+      showToast('Failed to reset sample data.', 'error');
     }
-    return { success: false, error: result.error };
-  };
-
-  const handleAdminLogout = async () => {
-    await signOutAdmin();
-    setAdminUser(null);
-    showToast('Logged out of admin area.');
-    navigateTo('collection');
   };
 
   return (
@@ -173,9 +147,7 @@ export default function App() {
           }
           navigateTo(view);
         }}
-        adminUser={adminUser}
-        onLogout={handleAdminLogout}
-        onOpenSetupModal={() => setIsSetupModalOpen(true)}
+        onOpenResetModal={() => setIsResetModalOpen(true)}
         onFocusSearch={() => {
           if (currentView !== 'collection') {
             navigateTo('collection');
@@ -202,7 +174,7 @@ export default function App() {
         </div>
       )}
 
-      {/* View Switcher */}
+      {/* Main View Switcher */}
       <div className="flex-grow">
         {currentView === 'collection' && (
           <CollectionPage
@@ -219,6 +191,7 @@ export default function App() {
               })
             }
             onCardClick={(person) => setSelectedPerson(person)}
+            onDeletePerson={(person) => setPersonToDelete(person)}
             onAddPersonClick={() => {
               setPersonToEdit(null);
               navigateTo('add-person');
@@ -230,49 +203,12 @@ export default function App() {
         {currentView === 'add-person' && (
           <AddEditPersonPage
             personToEdit={personToEdit}
-            isAdmin={!!adminUser}
-            onRequireAdmin={() => {
-              showToast('Administrator privileges required to add or edit.', 'error');
-              navigateTo('admin-login');
-            }}
             onSave={handleSavePerson}
             onCancel={() => {
               setPersonToEdit(null);
-              navigateTo(adminUser ? 'admin' : 'collection');
+              navigateTo('collection');
             }}
           />
-        )}
-
-        {currentView === 'admin-login' && (
-          <AdminLoginPage
-            onLogin={handleAdminLogin}
-            onCancel={() => navigateTo('collection')}
-          />
-        )}
-
-        {currentView === 'admin' && (
-          adminUser ? (
-            <AdminDashboardPage
-              adminUser={adminUser}
-              people={people}
-              onAddPerson={() => {
-                setPersonToEdit(null);
-                navigateTo('add-person');
-              }}
-              onEditPerson={(person) => {
-                setPersonToEdit(person);
-                navigateTo('add-person');
-              }}
-              onDeletePerson={(person) => setPersonToDelete(person)}
-              onViewPerson={(person) => setSelectedPerson(person)}
-              onLogout={handleAdminLogout}
-            />
-          ) : (
-            <AdminLoginPage
-              onLogin={handleAdminLogin}
-              onCancel={() => navigateTo('collection')}
-            />
-          )
         )}
       </div>
 
@@ -280,7 +216,6 @@ export default function App() {
       <PersonDetailModal
         person={selectedPerson}
         onClose={() => setSelectedPerson(null)}
-        adminUser={adminUser}
         onEdit={(person) => {
           setSelectedPerson(null);
           setPersonToEdit(person);
@@ -292,42 +227,41 @@ export default function App() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
+      <DeleteConfirmModal
+        person={personToDelete}
         isOpen={!!personToDelete}
-        title="Delete Person Card"
-        message={`Are you sure you want to delete ${personToDelete?.name}? This will remove their record from the database and delete their photo from storage.`}
-        confirmLabel="Delete Person"
-        cancelLabel="Cancel"
-        isDestructive={true}
-        isLoading={isDeleting}
+        onClose={() => setPersonToDelete(null)}
         onConfirm={handleConfirmDelete}
-        onCancel={() => setPersonToDelete(null)}
       />
 
-      {/* Supabase Setup Modal */}
-      <SupabaseSetupModal
-        isOpen={isSetupModalOpen}
-        onClose={() => setIsSetupModalOpen(false)}
+      {/* Reset Sample Data Confirmation Dialog */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetSampleData}
       />
 
-      {/* Footer */}
+      {/* Privacy Architecture Footer */}
       <footer className="mt-auto border-t border-[#EAE4DC] py-8 bg-[#F4EFEB]/60 text-center text-xs text-[#8C847B]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Person Card Collection — Digital Personal Archive</p>
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-2 text-[#529E72] font-medium">
+            <ShieldCheck className="w-4 h-4 text-[#529E72]" />
+            <span className="text-[#423E39]">
+              Your cards are stored locally in this browser. No external database or server required.
+            </span>
+          </div>
+
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setIsSetupModalOpen(true)}
-              className="text-[#706A62] hover:text-[#1F2421] transition-colors"
+              id="footer-reset-sample-btn"
+              onClick={() => setIsResetModalOpen(true)}
+              className="text-[#706A62] hover:text-[#1F2421] transition-colors flex items-center space-x-1"
             >
-              Supabase Configuration
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Sample Data</span>
             </button>
             <span>•</span>
-            <button
-              onClick={() => navigateTo(adminUser ? 'admin' : 'admin-login')}
-              className="text-[#706A62] hover:text-[#1F2421] transition-colors"
-            >
-              {adminUser ? 'Admin Dashboard' : 'Admin Login'}
-            </button>
+            <p>© {new Date().getFullYear()} Person Card Collection</p>
           </div>
         </div>
       </footer>

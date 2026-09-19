@@ -5,9 +5,14 @@ import { PersonCard } from './PersonCard';
 interface PersonGridProps {
   people: Person[];
   onCardClick: (person: Person) => void;
+  onDeletePerson?: (person: Person) => void;
 }
 
-export const PersonGrid: React.FC<PersonGridProps> = ({ people, onCardClick }) => {
+export const PersonGrid: React.FC<PersonGridProps> = ({
+  people,
+  onCardClick,
+  onDeletePerson
+}) => {
   return (
     <div
       id="person-collection-grid"
@@ -18,6 +23,7 @@ export const PersonGrid: React.FC<PersonGridProps> = ({ people, onCardClick }) =
           key={person.id}
           person={person}
           onClick={onCardClick}
+          onDelete={onDeletePerson}
         />
       ))}
     </div>

@@ -1,22 +1,20 @@
 import React, { useEffect } from 'react';
-import { Person, AdminUser } from '../types';
+import { Person } from '../types';
 import { formatDisplayDate } from '../utils/dateAndAge';
-import { ArrowLeft, Edit3, Trash2, Calendar, User, X } from 'lucide-react';
+import { ArrowLeft, Edit3, Trash2, Calendar, User, X, ShieldCheck } from 'lucide-react';
 
 interface PersonDetailModalProps {
   person: Person | null;
   onClose: () => void;
   onEdit: (person: Person) => void;
   onDelete: (person: Person) => void;
-  adminUser: AdminUser | null;
 }
 
 export const PersonDetailModal: React.FC<PersonDetailModalProps> = ({
   person,
   onClose,
   onEdit,
-  onDelete,
-  adminUser
+  onDelete
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,7 +28,9 @@ export const PersonDetailModal: React.FC<PersonDetailModalProps> = ({
 
   if (!person) return null;
 
-  const formattedDOB = formatDisplayDate(person.date_of_birth);
+  const displayDOB = person.dateOfBirth || person.date_of_birth;
+  const displayImage = person.image || person.photo_url;
+  const formattedDOB = formatDisplayDate(displayDOB);
 
   return (
     <div
@@ -48,20 +48,26 @@ export const PersonDetailModal: React.FC<PersonDetailModalProps> = ({
         <button
           onClick={onClose}
           aria-label="Close details"
-          className="absolute top-4 right-4 z-10 w-9 h-9 bg-white/80 hover:bg-white text-[#2D2A26] rounded-full backdrop-blur-md flex items-center justify-center shadow-xs transition-colors"
+          className="absolute top-4 right-4 z-10 w-9 h-9 bg-white/85 hover:bg-white text-[#2D2A26] rounded-full backdrop-blur-md flex items-center justify-center shadow-xs transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Content Container */}
         <div className="flex flex-col md:flex-row">
-          {/* Large Photo Section (4:5 Portrait) */}
+          {/* Portrait Image Section (4:5 Portrait) */}
           <div className="md:w-1/2 bg-[#F4EFEB] relative overflow-hidden aspect-[4/5] md:aspect-auto">
-            <img
-              src={person.photo_url}
-              alt={`Photo of ${person.name}`}
-              className="w-full h-full object-cover min-h-[300px] md:min-h-[440px]"
-            />
+            {displayImage ? (
+              <img
+                src={displayImage}
+                alt={`Portrait of ${person.name}`}
+                className="w-full h-full object-cover min-h-[300px] md:min-h-[440px]"
+              />
+            ) : (
+              <div className="w-full h-full min-h-[300px] flex items-center justify-center text-[#8C847B]">
+                <User className="w-16 h-16 opacity-40" />
+              </div>
+            )}
           </div>
 
           {/* Details Section */}
@@ -81,7 +87,7 @@ export const PersonDetailModal: React.FC<PersonDetailModalProps> = ({
               {/* Person Name */}
               <div>
                 <span className="text-[11px] font-semibold text-[#8C847B] uppercase tracking-wider">
-                  Person Profile
+                  Person Card
                 </span>
                 <h2
                   id="person-detail-name"
@@ -110,12 +116,11 @@ export const PersonDetailModal: React.FC<PersonDetailModalProps> = ({
                 </div>
               </div>
 
-              {/* Meta / Date added if present */}
-              {person.created_at && (
-                <p className="text-[11px] text-[#A39B92]">
-                  Added: {new Date(person.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </p>
-              )}
+              {/* Privacy badge */}
+              <div className="flex items-center space-x-2 text-[11px] text-[#706A62] bg-[#F4EFEB] px-3 py-2 rounded-xl">
+                <ShieldCheck className="w-4 h-4 text-[#529E72] shrink-0" />
+                <span>Stored locally in your browser</span>
+              </div>
             </div>
 
             {/* Action Buttons: Back, Edit, Delete */}
